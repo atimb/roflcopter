@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <title>Rofl Controller</title>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/js/utils.js"></script>
+        <script type="text/javascript" src="/js/serial.js"></script>
+        <script type="text/javascript" src="/js/wireless.js"></script>
+        <script type="text/javascript" src="/js/bootload.js"></script>
+        <script type="text/javascript" src="/js/main.js"></script>
+        <link  rel="stylesheet" href="/css/index.css">
+    </head>
+    <body>
+        <div>
+            <h1>Rofl Controller</h1>
+            <p>The ultimate HTML5 contolled Quadcopter.</p>
+            <br/>
+            
+            <div id="connect-container">
+                <span>Connect via</span>
+                <select id="ports">
+                </select>
+                <select id="baud">
+                    <option value="19200">19200</option>
+                </select>
+                <span>bps</span>
+                <input type="button" id="connect" value="Go!" />
+            </div>
+
+            <div id="controls" style="display: none;">
+                <span class="block">
+                    <input type="button" id="shutdown" value="EMERGENCY SHUT DOWN" />
+                    <input type="button" id="disconnect" value="Disconnect" />
+                    <br/>
+                    <input type="checkbox" id="engines-display" />
+                    <span>Engines</span>
+                    <div id="engines" style="display:block;">
+                        <progress max="255" value="25" class="engine" id="engine1"></progress>
+                        <progress max="255" value="40" class="engine" id="engine2"></progress>
+                        <progress max="255" value="30" class="engine" id="engine3"></progress>
+                        <progress max="255" value="35" class="engine" id="engine4"></progress>
+                    </div>
+                    <div id="rxs" style="display:none;">
+                        <progress max="600" value="25" class="rx" id="rx1"></progress>
+                        <progress max="600" value="40" class="rx" id="rx2"></progress>
+                        <progress max="600" value="30" class="rx" id="rx3"></progress>
+                        <progress max="1000" value="35" class="rx" id="rx4"></progress>
+                    </div>
+                    <div id="gyros" style="display:none;">
+                        <progress max="200" value="25" class="gyro" id="gyro1"></progress>
+                        <progress max="200" value="40" class="gyro" id="gyro2"></progress>
+                        <progress max="200" value="30" class="gyro" id="gyro3"></progress>
+                        <progress max="200" value="35" class="gyro" id="gyro4"></progress>
+                    </div>
+
+                    <div id="bootload">
+                        <div id="bootload-title">BootLoad here</div>
+                        <progress id="bootload-progress" max="100" value="0" style="display: none;"></progress>
+                        <div id="bootload-status" style="display: none;"></div>
+                    </div>
+                    
+                    <div id="hkrx">
+                        <input type="checkbox" id="hkrx-display" />
+                        <span>2.4GHz receiver</span>
+                        <canvas id="hkrx-canvas" width='100' height='100'>
+                        </canvas>
+                        <canvas id="hkrx-canvas2" width='100' height='100'>
+                        </canvas>
+                    </div>
+                    
+                    
+                </span>
+                <span class="block">
+                    <input type="checkbox" id="orientation-display" />
+                    <span>Enable orientation view</span>
+                    <div id="canvas3d">
+                        <div id="canvas3d-coord-system">
+                            <div id="canvas3d-coord-system-x"></div>
+                            <div id="canvas3d-coord-system-y"></div>
+                        </div>
+                        <div id="canvas3d-roflcopter" style="display: none;">
+                            <div id="canvas3d-roflcopter-x-axis"></div>
+                            <div id="canvas3d-roflcopter-y-axis"></div>
+                        </div>
+                    </div>
+                </span>
+                <br/><br/>
+                <span class="block block-wide">
+                
+                    <span>Show</span>
+                    <select id="orientation-display">
+                        <option value="rate">Angular Rate</option>
+                        <option value="angle">Angle</option>
+                    </select>
+                    <span>values</span>
+                    <input type="checkbox" id="orientation-display" />
+                    <span>Gyro X</span>
+                    <input type="checkbox" id="orientation-display" />
+                    <span>Gyro Y</span>
+                    <input type="checkbox" id="orientation-display" />
+                    <span>Gyro Z</span>
+                    <canvas id="gyro-canvas" width="800" height="400">
+                    </canvas>
+                </span>
+            </div>
+        </div>
+    </body>
+</html>
