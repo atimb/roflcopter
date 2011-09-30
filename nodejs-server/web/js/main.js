@@ -12,7 +12,7 @@
 
 $(document).ready(function() {
     
-    ROFL.log.init(ROFL.log.WARN);
+    ROFL.log.init(ROFL.log.INFO);
     
     ROFL.serial.init();
     
@@ -37,8 +37,26 @@ $(document).ready(function() {
     });
     
     $('#shutdown').click(function() {
-        ROFL.wireless.send([0x0A, 0x03, 0xF3], 1);
+        queuePackage([0x0A, 0x03, 0xF3], 1);
     });
+    
+    $('#gyro-compensation').change(function() {
+        if ($(this).is(':checked') === true) {
+            queuePackage([0x0B, 0x04, 0xF0, 0x01], 1);
+        } else {
+            queuePackage([0x0B, 0x04, 0xF1, 0x00], 1);
+        }        
+    });
+    
+    // Packages to be sent
+    pckgQueue = [];
+    var queuePackage = function() {
+        pckgQueue.push($.makeArray(arguments));
+        // Run queue consumer if not already
+        if (queryStop) {
+            queryCopter();
+        }
+    }
     
 
     var queryStop = true;
@@ -57,10 +75,18 @@ $(document).ready(function() {
         gyroX[i] = 0.5;
         gyroY[i] = 0.5;
         gyroZ[i] = 0.5;
-    }    
+    }
+    
+    queryUpdateInterval = 100;
 
     var queryStatus = 1;
     function queryCopter() {
+        if (pckgQueue.length > 0) {
+            var pckg = pckgQueue.shift();
+            pckg.push(queryCopter, queryCopter);
+            ROFL.wireless.send.apply(this, pckg);
+            return;
+        }
         if (queryStop) {
             queryStatus = 1;
             return;
@@ -75,8 +101,8 @@ $(document).ready(function() {
                         $('#engine3').val(data[2]);
                         $('#engine4').val(data[3]);
                     }
-                    queryCopter();
-                }, function() { queryStatus--; queryCopter(); });
+                    setTimeout(queryCopter, queryUpdateInterval);
+                }, function() { queryStatus--; setTimeout(queryCopter, queryUpdateInterval); });
                 break;
             case 2:
                 // rx-control-command
@@ -109,8 +135,8 @@ $(document).ready(function() {
                         ctx.fill();
                         
                     }
-                    queryCopter();
-                }, function() { queryStatus--; queryCopter(); });
+                    setTimeout(queryCopter, queryUpdateInterval);
+                }, function() { queryStatus--; setTimeout(queryCopter, queryUpdateInterval); });
                 break;
             case 3:
                 // gyro command
@@ -165,8 +191,8 @@ $(document).ready(function() {
                         
                     }
                     queryStatus = 1;
-                    queryCopter();
-                }, function() { queryStatus--; queryCopter(); });
+                    setTimeout(queryCopter, queryUpdateInterval);
+                }, function() { queryStatus--; setTimeout(queryCopter, queryUpdateInterval); });
                 break;
         }
     }

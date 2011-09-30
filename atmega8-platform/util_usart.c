@@ -101,22 +101,22 @@ void usart_process() {
 	if (usart_buffer_index < USART_MIN_PACKET_SIZE)	// Minimum packet length
 		return;
 
-	if (usart_buffer_index != usart_buffer[1])	// Whole package arrived
+	if (usart_buffer_index != usart_buffer[1]) // Whole package arrived
 		return;
 
 	usart_buffer_index = 0;
 
 	uint8_t checksum = 0;
-	for (uint8_t i=0; i<usart_buffer[1]; ++i) {		// Calculate checksum
+	for (uint8_t i=0; i<usart_buffer[1]; ++i) { // Calculate checksum
 		checksum += usart_buffer[i];
 	}
 
-	if (checksum != 0) { 	// Faulty transmission
+	if (checksum != 0) { // Faulty transmission
 		usart_state = USART_OUT_OF_SYNC;
 		return;
 	}
 
-	switch (usart_buffer[0]) {	// message ID
+	switch (usart_buffer[0]) { // message ID
 		case 0x00:  handleResetCommand(); break;
 		case 0x01:	handlePingCommand(); break;
 		case 0x02:  handleRxCommand(); break;
@@ -128,6 +128,7 @@ void usart_process() {
 		case 0x08:  handleGyroCommand(); break;
 		case 0x09:  handleGyroControlCommand(); break;
 		case 0x0A:  handlePanicCommand(); break;
+        case 0x0B:  handleGyroCompensationCommand(); break;
 		default: break;
 	}
 
@@ -218,11 +219,16 @@ void handleGyroControlCommand() {
 }
 
 void handlePanicCommand() {
-	copter_state = 99; //panic mode
-	usart_sendbuffer[6] = 0x00;
+	copter_state = 99; // Panic mode -> Shut down all engines
+	usart_sendbuffer[0] = 0x77;
 	USART_async_send_start(1);
 }
 
+void handleGyroCompensationCommand() {
+    gyro_compensation_enabled = usart_buffer[3];
+    usart_sendbuffer[0] = 0x44;
+	USART_async_send_start(1);
+}
 
 /*------------------------------*/
 /*     USART BLOCKING TXRX      */

@@ -64,6 +64,8 @@ extern volatile uint16_t rx_verified_data[8];
 
 extern volatile uint16_t adc_gyro_data[3];
 
+extern volatile uint8_t gyro_compensation_enabled;
+
 enum {
 	ACC_X,
 	ACC_Y,

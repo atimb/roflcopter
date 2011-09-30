@@ -38,6 +38,7 @@ volatile uint8_t twi_state = 1;
 
 volatile uint16_t adc_gyro_data[3];
 
+volatile uint8_t gyro_compensation_enabled = 1;
 
 void business_logics() {
 
@@ -46,30 +47,33 @@ void business_logics() {
 		controls.gyro_data[i] = (int16_t)adc_gyro_data[i] - (int16_t)adc_gyro_start_position[i];
 	}
 
-
 	/* REMOTE CONTROLLER */
 	controls.control[CTRL_THRUST] = (int16_t)rx_verified_data[RX_THRUST] - (int16_t)rx_start_position[RX_THRUST];
+	controls.control[CTRL_ROLL] = (int16_t)rx_verified_data[RX_ROLL] - (int16_t)rx_start_position[RX_ROLL];
+	controls.control[CTRL_PITCH] = (int16_t)rx_verified_data[RX_PITCH] - (int16_t)rx_start_position[RX_PITCH];
+	controls.control[CTRL_YAW] = (int16_t)- rx_verified_data[RX_YAW] + (int16_t)rx_start_position[RX_YAW];
+
+	if (gyro_compensation_enabled) {
+	    controls.control[CTRL_ROLL] += controls.gyro_data[GYRO_ROLL]*2;
+		controls.control[CTRL_PITCH] -= controls.gyro_data[GYRO_PITCH]*2;
+	    controls.control[CTRL_YAW] -= controls.gyro_data[GYRO_YAW]*5;
+    }
+	
 	if (controls.control[CTRL_THRUST] < 0)
 		controls.control[CTRL_THRUST] = 0;
 	if (controls.control[CTRL_THRUST] > 750)
 		controls.control[CTRL_THRUST] = 750;
-
-	controls.control[CTRL_ROLL] = (int16_t)rx_verified_data[RX_ROLL] - (int16_t)rx_start_position[RX_ROLL];
-	controls.control[CTRL_ROLL] += controls.gyro_data[GYRO_ROLL]*1;
+	
 	if (controls.control[CTRL_ROLL] < -375)
 		controls.control[CTRL_ROLL] = -375;
 	if (controls.control[CTRL_ROLL] > 375)
 		controls.control[CTRL_ROLL] = 375;
 
-	controls.control[CTRL_PITCH] = (int16_t)rx_verified_data[RX_PITCH] - (int16_t)rx_start_position[RX_PITCH];
-	controls.control[CTRL_PITCH] -= controls.gyro_data[GYRO_PITCH]*1;
 	if (controls.control[CTRL_PITCH] < -375)
 		controls.control[CTRL_PITCH] = -375;
 	if (controls.control[CTRL_PITCH] > 375)
 		controls.control[CTRL_PITCH] = 375;
 
-	controls.control[CTRL_YAW] = (int16_t)- rx_verified_data[RX_YAW] + (int16_t)rx_start_position[RX_YAW];
-	controls.control[CTRL_YAW] -= controls.gyro_data[GYRO_YAW]*5;
 	if (controls.control[CTRL_YAW] < -375)
 		controls.control[CTRL_YAW] = -375;
 	if (controls.control[CTRL_YAW] > 375)
@@ -242,6 +246,8 @@ int main() {
 	}
 
 	uint8_t rx_sample_count = 0;
+	
+    gyro_compensation_enabled = 1;
 
 	__ERR_LED;
 
@@ -249,6 +255,8 @@ int main() {
 	while (1) {		// Main cycle
 
 		usart_process();
+		
+		__FLASH_LED;
 
 		switch (copter_state) {
 			case 1:
