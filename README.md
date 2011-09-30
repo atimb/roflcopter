@@ -10,6 +10,7 @@ you find here.
 ## How it works
 
 The flight platform is an Atmega8 based circuit. The attached sensors are:
+
 * 3x ADXRS610 angular rate sensor
 * 1x LIS3LV02DQ 3-axis acceleration sensor
 
@@ -22,16 +23,17 @@ On the computer (PC/Mac/whatever) side sits an XBee Exporer USB, that with the i
 device on the computer.
 The HTML5 control interface is ready to establish the communication link to the RoflCopter, so here comes
 the node.js proxy, that makes it possible. It effectively creates a tunnel: /dev/tty-usb-xyz <-> socket.io,
-making it possible in the browser to have full asynch access to the XBee serial interface.
+making it possible in the browser to have full async access to the XBee serial interface.
 
 The HTML5 interface provides controlling and debugging functionalities, that can be easily implemented/extended
 given the simplicity of html/js.
 Current features include:
+
 * Pull-in HEX file to bootload new firmware (HTML5 File Api)
 * Copter orientation 3D display (CSS3 transformations)
-* Engine status display (new <progress> tag)
-* Sensor output graphs (<canvas> element)
-* RC Transmitter inputs display (<canvas>)
+* Engine status display (new `progress` tag)
+* Sensor output graphs (`canvas` element)
+* RC Transmitter inputs display (`canvas` element)
 
 ## Structure
 
@@ -40,6 +42,7 @@ Current features include:
 The platform firmware itself. Not too much magic (as of now), quite consistent and self-describing function and
 variable names.
 The main modules are:
+
 * USART communication: This is the interface toward the computer through the XBee. Checksum validation, re-synching,
 and handles the debug- and control messages received from the HTML5 side.
 * TWI/I2C communication: Sending thrust data to engines, interrogating the acceleration sensor.
@@ -76,6 +79,7 @@ the differential equations.
 ## License
 
 (C) 2011 Attila Incze <attila.incze@gmail.com>, Balazs Nagy <balazs.1.nagy@nsn.com>
+
 http://atimb.me
 
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. To view a copy of this license, visit
