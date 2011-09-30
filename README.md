@@ -7,6 +7,8 @@ There are quite a few RC UAV platforms out there, but not too many with an HTML5
 so if you like the idea, feel free to incorporate in your (non-commercial) project the best ideas
 you find here.
 
+**Beta Warning:** *Frontent looks messy. It's under heavy development.*
+
 ## How it works
 
 The flight platform is an Atmega8 based circuit. The attached sensors are:
