@@ -15,14 +15,13 @@
 #include "util/delay.h"
 #include "avr/interrupt.h"
 #include "avr/eeprom.h"
-#include "util_twi.h"
 #include "util_usart.h"
 #include "rc_rx.h"
 #include "math.h"
 #include "TWI_Master.h"
 #include "adc.h"
 
-unsigned char twi_messageBuf[4];
+unsigned char twi_messageBuf[10];
 uint8_t motor_send_index = 0;
 
 volatile settings_t settings;
@@ -39,6 +38,7 @@ volatile uint8_t twi_state = 1;
 volatile uint16_t adc_gyro_data[3];
 
 volatile uint8_t gyro_compensation_enabled = 1;
+volatile uint8_t acc_compensation_enabled = 1;
 
 void business_logics() {
 
@@ -57,6 +57,11 @@ void business_logics() {
 	    controls.control[CTRL_ROLL] += controls.gyro_data[GYRO_ROLL]*2;
 		controls.control[CTRL_PITCH] -= controls.gyro_data[GYRO_PITCH]*2;
 	    controls.control[CTRL_YAW] -= controls.gyro_data[GYRO_YAW]*5;
+    }
+    
+    if (acc_compensation_enabled) {
+	    controls.control[CTRL_ROLL] += controls.acc_data[ACC_X] >> 1;
+		controls.control[CTRL_PITCH] += controls.acc_data[ACC_Y] >> 1;
     }
 	
 	if (controls.control[CTRL_THRUST] < 0)
@@ -104,8 +109,8 @@ void business_logics() {
 	}
 
 	for (int i=0; i<4; i++) {
-		if (tempengines[i] > 150)
-			controls.engines[i] = 150;
+		if (tempengines[i] > 250)
+			controls.engines[i] = 250;
 		else if (tempengines[i] < 0)
 			controls.engines[i] = 0;
 		else
@@ -119,39 +124,45 @@ void business_logics() {
 		}
 	}
 }
+/*
+void test_AccSensor() {
+	USART_send_byte(0xFF);
+	TWI_statusReg.lastTransOK = FALSE;
+	twi_messageBuf[0] = TWI_LIS3LV;
+	twi_messageBuf[1] = 0x0F;
+
+	TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
+	while ( TWI_Transceiver_Busy() );
+
+    USART_send_byte(TWI_statusReg.lastTransOK ? 0x01 : 0x00);
+	TWI_statusReg.lastTransOK = FALSE;
+	twi_messageBuf[0] = TWI_LIS3LV | 0x01; // READ BIT
+
+	TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
+	while ( TWI_Transceiver_Busy() );
+	
+	USART_send_byte(TWI_statusReg.lastTransOK ? 0x01 : 0x00);
+	TWI_Get_Data_From_Transceiver( twi_messageBuf, 2);
+
+	USART_send_byte(twi_messageBuf[0]);
+	USART_send_byte(twi_messageBuf[1]);
+}
+
 
 void setup_AccSensor() {
-	USART_send_byte(0xFA);
-	do {
-		if (!TWI_Transceiver_Busy()) {
-			switch (twi_state++) {
-				case 1:
-					TWI_statusReg.lastTransOK = FALSE;
-					twi_messageBuf[0] = TWI_LIS3LV;
-					twi_messageBuf[1] = 0x20;
-					TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
-					USART_send_byte(0xFF);
-					break;
-				case 2:
-					TWI_statusReg.lastTransOK = FALSE;
-					twi_messageBuf[0] = TWI_LIS3LV | 0x01; // READ BIT
-					TWI_Start_Transceiver_With_Data( twi_messageBuf, 1);
-					USART_send_byte(0xFE);
-					break;
-				case 3:
-					TWI_statusReg.lastTransOK = FALSE;
-					TWI_Get_Data_From_Transceiver( twi_messageBuf, 1);
-					USART_send_byte(0xFD);
-					USART_send_byte(twi_messageBuf[0]);
-					//twi_messageBuf[1] = twi_messageBuf[0] | 0xC0;	// Add start sensor flags
-					//twi_messageBuf[0] = TWI_LIS3LV;
-					//TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
-					break;
-			}
-		}
-	} while (twi_state < 4);
-	twi_state = 1;
+	twi_messageBuf[0] = TWI_LIS3LV;
+	twi_messageBuf[1] = 0x20;
+	TWI_Start_Transceiver_With_Data(twi_messageBuf, 2);
+	twi_messageBuf[0] = TWI_LIS3LV | 0x01; // Add read bit
+	TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
+	TWI_Get_Data_From_Transceiver( twi_messageBuf, 2);
+	twi_messageBuf[2] = twi_messageBuf[1] | 0xC0; // Add start sensor flags
+	twi_messageBuf[1] = 0x20;
+	twi_messageBuf[0] = TWI_LIS3LV;	
+	TWI_Start_Transceiver_With_Data( twi_messageBuf, 3);
+	while ( TWI_Transceiver_Busy() );
 }
+
 
 void sendToMotor() {
 	_delay_ms(1);  // fix for TWI block bug
@@ -184,30 +195,60 @@ void sendToMotor() {
 					motor_send_index++;
 				}
 				// Send next motor status
-				twi_messageBuf[0] = 0x52+motor_send_index*2;
+				twi_messageBuf[0] = 0x52 + 2*motor_send_index;
 				twi_messageBuf[1] = controls.engines[motor_send_index];
-				TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
+				TWI_Start_Transceiver_With_Data(twi_messageBuf, 2);
 				break;
 			case 5:
-				twi_messageBuf[0] = TWI_LIS3LV;
-				twi_messageBuf[1] = 0x28;
-				TWI_Start_Transceiver_With_Data( twi_messageBuf, 2);
-				break;
-			case 6:
-				twi_messageBuf[0] = TWI_LIS3LV | 0x01;	// READ BIT
-				TWI_Start_Transceiver_With_Data( twi_messageBuf, 6);
-				break;
-			case 7:
-				TWI_Get_Data_From_Transceiver( twi_messageBuf, 6 );
-				for (int i=0; i<3; ++i) {
-					controls.acc_data[i] = twi_messageBuf[2*i] | twi_messageBuf[2*i+1]<<8;
-				}
-				twi_state = 1;
-				break;
-		}
+                twi_state = 1;
+                break;
+	    }
+    }
+}
+
+
+void queryAcc() {
+
+	twi_messageBuf[0] = TWI_LIS3LV;
+	twi_messageBuf[1] = 0x28 | 0x80;
+	TWI_Start_Transceiver_With_Data(twi_messageBuf, 2);
+
+	twi_messageBuf[0] = TWI_LIS3LV | 0x01;	// Add read bit
+	TWI_Start_Transceiver_With_Data(twi_messageBuf, 7);
+
+	TWI_Get_Data_From_Transceiver(twi_messageBuf, 7);
+	
+	// debug
+	//for (int i=0; i<7; ++i) {
+	 //   USART_send_byte(twi_messageBuf[i]);
+	//}
+	// end-debug :  [59,40,0,0,254,5]
+	
+	for (int i=0; i<3; ++i) {
+		controls.acc_data[i] = twi_messageBuf[2*i+1] | twi_messageBuf[2*i+2]<<8;
+	}	
+}
+*/
+
+void setup_AccSensor() {
+    twi_messageBuf[0] = TWI_LIS3LV_CTRL_VAL;
+    twi_easy_write(TWI_LIS3LV, TWI_LIS3LV_CONTROL, twi_messageBuf, 1);
+}
+
+void queryAcc() {
+    twi_easy_read(TWI_LIS3LV, TWI_LIS3LV_OUT, twi_messageBuf, 6);
+	for (int i=0; i<3; ++i) {
+		controls.acc_data[i] = twi_messageBuf[2*i] | twi_messageBuf[2*i+1]<<8;
 	}
 }
 
+void sendToMotor() {
+    for (int i=0; i<4; ++i) {                    
+        twi_easy_write(TWI_MOTOR_1 + 2*i, controls.engines[i], 0, 0);
+        _delay_ms(1);  // fix for TWI block bug
+    	usart_process();
+    }
+}
 
 int main() {
 
@@ -216,7 +257,7 @@ int main() {
 
 	for (uint8_t i=0; i<3; ++i) {	// Flash LED, still alive!
 		__ERR_LED
-		_delay_ms(50);
+		_delay_ms(500);
 		__OK_LED
 		_delay_ms(100);
 	}
@@ -247,16 +288,12 @@ int main() {
 
 	uint8_t rx_sample_count = 0;
 	
-    gyro_compensation_enabled = 1;
-
 	__ERR_LED;
 
 
 	while (1) {		// Main cycle
 
 		usart_process();
-		
-		__FLASH_LED;
 
 		switch (copter_state) {
 			case 1:
@@ -280,7 +317,10 @@ int main() {
 				}
 				break;
 			case 10:	// Ready To Fly
+                queryAcc();
 				business_logics();
+				_delay_ms(1);  // fix for TWI block bug
+            	usart_process();
 				sendToMotor();
 				break;
 			case 99:	// Panic mode!

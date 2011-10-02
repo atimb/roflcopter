@@ -27,19 +27,21 @@
                 <input type="button" id="connect" value="Go!" />
             </div>
 
-            <div id="controls" style="display: none;">
+            <div id="controls" style="display:none;">
                 <span class="block">
                     <input type="button" id="shutdown" value="EMERGENCY SHUT DOWN" />
                     <input type="button" id="disconnect" value="Disconnect" />
                     <br/>
                     <div id="controls">
                         <input type="checkbox" checked="checked" id="gyro-compensation" value="Gyro compensation" />
-                        <input type="checkbox" id="accel-compensation" value="Accel compensation" />
+                        <span>Rate compensation</span>
+                        <input type="checkbox" checked="checked" id="acc-compensation" value="Accel compensation" />
+                        <span>Accel compensation</span>
                     </div>
                     <br/>
                     <input type="checkbox" id="engines-display" />
                     <span>Engines</span>
-                    <div id="engines" style="display:block;">
+                    <div id="engines" style="">
                         <progress max="255" value="25" class="engine" id="engine1"></progress>
                         <progress max="255" value="40" class="engine" id="engine2"></progress>
                         <progress max="255" value="30" class="engine" id="engine3"></progress>
@@ -72,8 +74,7 @@
                         <canvas id="hkrx-canvas2" width='100' height='100'>
                         </canvas>
                     </div>
-                    
-                    
+   
                 </span>
                 <span class="block">
                     <input type="checkbox" id="orientation-display" />
@@ -83,7 +84,7 @@
                             <div id="canvas3d-coord-system-x"></div>
                             <div id="canvas3d-coord-system-y"></div>
                         </div>
-                        <div id="canvas3d-roflcopter" style="display: none;">
+                        <div id="canvas3d-roflcopter" style="">
                             <div id="canvas3d-roflcopter-x-axis"></div>
                             <div id="canvas3d-roflcopter-y-axis"></div>
                         </div>
@@ -107,6 +108,7 @@
                     <canvas id="gyro-canvas" width="800" height="400">
                     </canvas>
                 </span>
+                
             </div>
         </div>
     </body>

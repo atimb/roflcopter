@@ -32,6 +32,9 @@ void handleRxControlCommand();
 void handleGyroCommand();
 void handleGyroControlCommand();
 void handlePanicCommand();
+void handleGyroCompensationCommand();
+void handleAccCompensationCommand();
+void handleAccCommand();
 
 void setup_USART();
 char USART_recv_byte();

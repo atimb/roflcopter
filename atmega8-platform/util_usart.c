@@ -129,6 +129,8 @@ void usart_process() {
         case 0x09:  handleGyroControlCommand(); break;
         case 0x0A:  handlePanicCommand(); break;
         case 0x0B:  handleGyroCompensationCommand(); break;
+        case 0x0C:  handleAccCompensationCommand(); break;
+        case 0x0D:  handleAccCommand(); break;
         default: break;
     }
 
@@ -229,6 +231,22 @@ void handleGyroCompensationCommand() {
     usart_sendbuffer[0] = 0x44;
     USART_async_send_start(1);
 }
+
+void handleAccCompensationCommand() {
+    acc_compensation_enabled = usart_buffer[3];
+    usart_sendbuffer[0] = 0x33;
+    USART_async_send_start(1);
+}
+
+void handleAccCommand() {
+    for (uint8_t i=0; i<3; i++) {
+        usart_sendbuffer[2*i] = (uint16_t)(1000+controls.acc_data[i])>>8;
+        usart_sendbuffer[2*i+1] = (uint16_t)(1000+controls.acc_data[i]);
+    }
+    usart_sendbuffer[6] = 0x99;
+    USART_async_send_start(7);
+}
+
 
 /*------------------------------*/
 /*     USART BLOCKING TXRX      */

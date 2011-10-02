@@ -69,6 +69,82 @@ unsigned char TWI_Get_State_Info( void )
   return ( TWI_state );                         // Return error state.
 }
 
+unsigned char twi_easy_write(unsigned char target, unsigned char addr, unsigned char* msg, unsigned char length) {
+    TWI_statusReg.lastTransOK = FALSE;
+
+    if (length > 1) {
+        addr |= 0x80;    // Most Significant Bit -> Auto-increment addr on slave side
+    }
+
+    TWI_msgSize = length + 2;                        // Number of data to transmit.
+    TWI_buf[0]  = target;                         // Store slave address with R/W setting.
+    TWI_buf[1]  = addr;                         // Store slave addr
+    
+    for (unsigned char temp = 0; temp < length; temp++ ) {
+        TWI_buf[ temp + 2 ] = msg[ temp ];
+    }
+    
+    TWI_statusReg.all = 0;      
+    TWI_state         = TWI_NO_STATE ;
+    TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+           (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+           (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+           (0<<TWWC);                             //
+    
+    while ( TWI_Transceiver_Busy() );
+    return TWI_statusReg.lastTransOK;
+}
+
+unsigned char twi_easy_read(unsigned char target, unsigned char addr, unsigned char* msg, unsigned char length) {
+    TWI_statusReg.lastTransOK = FALSE;
+
+    if (length > 1) {
+        addr |= 0x80;    // Most Significant Bit -> Auto-increment addr on slave side
+    }
+    
+    // First send read addr
+
+    TWI_msgSize = 2;                        // Number of data to transmit.
+    TWI_buf[0]  = target;                         // Store slave address with R/W setting.
+    TWI_buf[1]  = addr;                         // Store slave addr
+    
+    TWI_statusReg.all = 0;      
+    TWI_state         = TWI_NO_STATE ;
+    TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+           (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+           (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+           (0<<TWWC);                             //
+    
+    while ( TWI_Transceiver_Busy() );
+    if ( !TWI_statusReg.lastTransOK ) {
+        return FALSE;
+    }
+    
+    // Now do the read
+    
+    TWI_msgSize = length + 1;                        // Number of data to transmit.
+    TWI_buf[0]  = target | (TRUE<<TWI_READ_BIT);                         // Store slave address with R/W setting.
+        
+    TWI_statusReg.all = 0;      
+    TWI_state         = TWI_NO_STATE ;
+    TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+           (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+           (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+           (0<<TWWC);                             //
+
+    while ( TWI_Transceiver_Busy() );        
+    if( TWI_statusReg.lastTransOK )               // Last transmission competed successfully.
+    {                                             
+      for (unsigned char i=0; i<length; i++ )                 // Copy data from Transceiver buffer.
+      {
+        msg[ i ] = TWI_buf[ i + 1 ];
+      }
+      return TRUE;
+    }
+    
+    return FALSE;
+}
+
 /****************************************************************************
 Call this function to send a prepared message. The first byte must contain the slave address and the
 read/write bit. Consecutive bytes contain the data to be sent, or empty locations for data to be read

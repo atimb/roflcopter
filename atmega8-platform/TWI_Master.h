@@ -25,7 +25,7 @@
 /****************************************************************************
   TWI Status/Control register definitions
 ****************************************************************************/
-#define TWI_BUFFER_SIZE 4   // Set this to the largest message size that will be sent including address byte.
+#define TWI_BUFFER_SIZE 10   // Set this to the largest message size that will be sent including address byte.
 
 #define TWI_CLOCK 			100000UL
 #define TWI_TWBR            ((SYSCLK/TWI_CLOCK)-16)/2        // TWI Bit rate Register setting.
@@ -49,6 +49,10 @@ union TWI_statusReg                       // Status byte holding flags.
 };
 
 extern union TWI_statusReg TWI_statusReg;
+
+// Easy(TM) methods
+unsigned char twi_easy_write(unsigned char target, unsigned char addr, unsigned char* msg, unsigned char length);
+unsigned char twi_easy_read(unsigned char target, unsigned char addr, unsigned char* msg, unsigned char length);
 
 /****************************************************************************
   Function definitions

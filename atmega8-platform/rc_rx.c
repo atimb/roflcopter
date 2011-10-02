@@ -82,7 +82,7 @@ ISR(TIMER2_COMP_vect) {  // Receiving one bit from RX
 			rx_byte_index = 0;
 			//if ((uint8_t)rx_income_data[8] == (uint8_t)rx_crc_byte) && ((uint8_t)(rx_income_data[8]>>8) == ) {	// CRC OK
 			if (rx_income_data[8] == rx_crc_byte) {	// CRC OK
-				//__FLASH_LED;
+				__FLASH_LED;
 				for (uint8_t i=0; i<9; i++) {
 					rx_verified_data[i] = rx_income_data[i];
 				}

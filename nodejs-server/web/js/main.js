@@ -25,7 +25,7 @@ $(document).ready(function() {
     $('#connect').click(function() {
         ROFL.serial.connect($('#ports').val(), $('#baud').val(), function(data) {
             $('#connect-container').hide();
-            $('#controls').show();
+            $('#controls').show().css({display: 'block'});
         });
     });
     
@@ -48,6 +48,14 @@ $(document).ready(function() {
         }        
     });
     
+    $('#acc-compensation').change(function() {
+        if ($(this).is(':checked') === true) {
+            queuePackage([0x0C, 0x04, 0xEF, 0x01], 1);
+        } else {
+            queuePackage([0x0C, 0x04, 0xF0, 0x00], 1);
+        }        
+    });
+    
     // Packages to be sent
     pckgQueue = [];
     var queuePackage = function() {
@@ -57,7 +65,6 @@ $(document).ready(function() {
             queryCopter();
         }
     }
-    
 
     var queryStop = true;
     $('#engines-display').change(function() {
@@ -77,7 +84,7 @@ $(document).ready(function() {
         gyroZ[i] = 0.5;
     }
     
-    queryUpdateInterval = 100;
+    queryUpdateInterval = 10;
 
     var queryStatus = 1;
     function queryCopter() {
@@ -190,13 +197,31 @@ $(document).ready(function() {
                         ctx.stroke();
                         
                     }
-                    queryStatus = 1;
                     setTimeout(queryCopter, queryUpdateInterval);
                 }, function() { queryStatus--; setTimeout(queryCopter, queryUpdateInterval); });
                 break;
+            case 4:
+                    // acc command
+                    ROFL.wireless.send([0x0D, 0x03, 0xF0], 7, function(data) {
+                        if (data[6] == 0x99) {
+                            // Value between 0 and 2000
+                            var x = ((data[0]*256 + data[1]) - 1000);
+                            var y = ((data[2]*256 + data[3]) - 1000);
+                            var z = ((data[4]*256 + data[5]) - 1000);
+                            
+                            console.log(x, y, z);
+                            
+                            var xdeg = x / 10;
+                            var ydeg = y / 10;
+
+                            $('#canvas3d-roflcopter').css('-webkit-transform', 'rotateX(60deg) rotateZ(20deg) rotateX('+xdeg+'deg) rotateY('+ydeg+'deg)');
+                        }
+                        queryStatus = 1;
+                        setTimeout(queryCopter, queryUpdateInterval);
+                    }, function() { queryStatus--; setTimeout(queryCopter, queryUpdateInterval); });
+                    break;
         }
     }
-
 
     $.event.props.push('dataTransfer');
     $('#bootload').bind({
@@ -213,6 +238,7 @@ $(document).ready(function() {
             var f = e.dataTransfer.files[0];
             var reader = new FileReader();
             reader.onload = function(e) {
+                $('#bootload-progress').val(0);
                 $('#bootload-progress').show();
                 ROFL.bootload.progress = function(prog) {
                     $('#bootload-progress').val(prog);

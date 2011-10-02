@@ -29,10 +29,6 @@ h3 > span {
     color: #555;
 }
 
-#rss-input {
-    width: 300px;
-}
-
 input, select {
     font-size: 100%;
     color: #000;
@@ -69,10 +65,10 @@ div#canvas3d {
 
 @-webkit-keyframes mozogg {
     from {
-        -webkit-transform: rotateX(60deg) rotateZ(20deg) rotateY(-10deg);
+        -webkit-transform: rotateX(60deg) rotateZ(20deg) rotateX(-10deg) rotateY(-10deg);
     }
     to {
-        -webkit-transform: rotateX(60deg) rotateZ(20deg) rotateY(10deg);
+        -webkit-transform: rotateX(60deg) rotateZ(20deg) rotateX(10deg) rotateY(10deg);
     }
 }
 
@@ -84,11 +80,12 @@ div#canvas3d-roflcopter {
     left: 50px;
     -webkit-backface-visibility: hidden;
     -webkit-transform-style: preserve-3d;
-    -webkit-animation-name: mozog;
-    -webkit-animation-timing-function: ease-in-out;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-iteration-count: 200;
-    -webkit-animation-direction: alternate;
+    -webkit-transform: rotateX(60deg) rotateZ(20deg);
+    --webkit-animation-name: mozogg;
+    --webkit-animation-timing-function: ease-in-out;
+    --webkit-animation-duration: 1s;
+    --webkit-animation-iteration-count: 200;
+    --webkit-animation-direction: alternate;
 }
 
 div#canvas3d-roflcopter-x-axis {
@@ -109,7 +106,7 @@ div#canvas3d-roflcopter-y-axis {
     position: absolute;
 }
 
-#gyro-canvas {
+canvas#gyro-canvas {
     border: 1px solid #aaa;
     border-radius: 10px;
 }
@@ -228,29 +225,30 @@ progress#gyro4 {
     top: 200px; left: 90px;
 }
 
-#bootload {
+div#bootload {
     width: 150px;
     height: 60px;
     border: 2px dashed #aaa;
     border-radius: 10px;
     text-align: center;
+    background-color: #eee;
 }
 
-#bootload-title {
+div#bootload-title {
     padding: 5px;
 }
 
-#bootload-progress {
+progress#bootload-progress {
     height: 20px;
     width: 130px;
 }
 
-#bootload-status {
+div#bootload-status {
     font-size: 80%;
     color: #f55;
 }
 
 
-#hkrx-canvas, #hkrx-canvas2 {
+canvas#hkrx-canvas, canvas#hkrx-canvas2 {
     border: 1px solid #555;
 }

@@ -65,6 +65,7 @@ extern volatile uint16_t rx_verified_data[8];
 extern volatile uint16_t adc_gyro_data[3];
 
 extern volatile uint8_t gyro_compensation_enabled;
+extern volatile uint8_t acc_compensation_enabled;
 
 enum {
 	ACC_X,
@@ -106,9 +107,12 @@ enum {
 
 
 // TWI defines
-#define TWI_LIS3LV   (0x3A|0x01)   // TWI address for LIS3LV02DQ sensor
-#define TWI_MOTOR_1  0x52   // TWI address for brushless ctrler #1
-#define MAX_TWI_ITER	200  // TWI communication timeout
+#define TWI_LIS3LV          0x3A   // TWI address for LIS3LV02DQ sensor
+#define TWI_LIS3LV_CONTROL  0x20   // TWI register addr for acceleration sensor setup
+#define TWI_LIS3LV_CTRL_VAL 0xC7   // Value for previous field
+#define TWI_LIS3LV_OUT      0x28   // TWI register addr for acceleration values
+#define TWI_MOTOR_1         0x52   // TWI address for brushless ctrler #1
+#define MAX_TWI_ITER	    200    // TWI communication timeout
 
 
 // USART defines
