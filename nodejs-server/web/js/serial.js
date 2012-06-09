@@ -20,7 +20,7 @@ ROFL.serial = {
      *
     */
     init: function(listCb, connectedCb, disconnectedCb) {
-        ROFL.serial.socket = io.connect('/');
+        ROFL.serial.socket = io.connect();
         ROFL.serial.socket.on('serial-read-byte', function(data) {
             if (typeof ROFL.serial.read === "function") {
                 ROFL.serial.read(data);

@@ -12,15 +12,18 @@
 
 // Require neccessary modules (express: web server, socket.io: real-time (websocket-like) browser-server communication)
 var express = require('express');
-var srv = express.createServer( express.static(__dirname + '/web') );
-var io = require('socket.io').listen(srv);
+var app = express();
 var fs = require('fs');
 
 var SerialPort = require("serialport").SerialPort;
 var serial_port = null;
 
+app.use(express.static(__dirname + '/web'));
+
 // Let our webserver listen on the specified port
-srv.listen(80);
+var port = process.env.PORT || 8080;
+var srv = app.listen(port);
+var io = require('socket.io').listen(srv);
 
 Buffer.prototype.toByteArray = function () {
     return Array.prototype.slice.call(this, 0);
