@@ -7,6 +7,9 @@ There are quite a few RC UAV platforms out there, but not too many with an HTML5
 so if you like the idea, feel free to incorporate in your (non-commercial) project the best ideas
 you find here.
 
+![Body](https://github.com/atimb/roflcopter/raw/master/pictures/body.jpg)
+![Flight control](https://github.com/atimb/roflcopter/raw/master/pictures/flight_control.jpg)
+
 **Beta Warning:** *Frontent looks messy. It's under heavy development.*
 
 ## How it works
